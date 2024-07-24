@@ -57,3 +57,5 @@ db/
 
 # Ignore Docker files
 docker-compose.yml
+
+schema.sql
