@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, List, ListItem, ListItemText, Typography, Container } from '@mui/material';
+import { Button, List, ListItem, ListItemText, Typography, Container, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const ViewMatches = () => {
   const [matches, setMatches] = useState([]);
@@ -13,7 +14,7 @@ const ViewMatches = () => {
 
   const loadMatches = async () => {
     const token = localStorage.getItem('token');
-    const result = await axios.get('http://localhost:5000/matches', {
+    const result = await axios.get('http://localhost:5000/matches-with-players', {
       headers: { Authorization: `Bearer ${token}` }
     });
     setMatches(result.data);
@@ -37,6 +38,7 @@ const ViewMatches = () => {
       if (response.status === 200) {
         alert('Successfully signed up for the match');
         loadBookings();
+        loadMatches();
       }
     } catch (error) {
       console.error('Sign-up error:', error);
@@ -53,6 +55,7 @@ const ViewMatches = () => {
       if (response.status === 200) {
         alert('Successfully unsigned from the match');
         loadBookings();
+        loadMatches();
       }
     } catch (error) {
       console.error('Unsign error:', error);
@@ -69,18 +72,30 @@ const ViewMatches = () => {
       <Typography variant="h4" gutterBottom>Future Matches</Typography>
       <List>
         {matches.map(match => (
-          <ListItem key={match.id}>
-            <ListItemText primary={`${match.date} - ${match.time} - ${match.location}`} />
-            {isUserSignedUp(match.id) ? (
-              <Button variant="contained" color="secondary" onClick={() => handleUnsign(match.id)}>
-                Unsign
-              </Button>
-            ) : (
-              <Button variant="contained" color="primary" onClick={() => handleSignUp(match.id)}>
-                Sign Up
-              </Button>
-            )}
-          </ListItem>
+          <Accordion key={match.id}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>{`${match.date} - ${match.time} - ${match.location}`}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="subtitle1">Players Signed Up ({match.players.length}):</Typography>
+              <List>
+                {match.players.map((player, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={player} />
+                  </ListItem>
+                ))}
+              </List>
+              {isUserSignedUp(match.id) ? (
+                <Button variant="contained" color="secondary" onClick={() => handleUnsign(match.id)}>
+                  Unsign
+                </Button>
+              ) : (
+                <Button variant="contained" color="primary" onClick={() => handleSignUp(match.id)}>
+                  Sign Up
+                </Button>
+              )}
+            </AccordionDetails>
+          </Accordion>
         ))}
       </List>
     </Container>
