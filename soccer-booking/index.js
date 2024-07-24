@@ -607,6 +607,21 @@ app.delete('/bookings/:match_id', authenticateJWT, async (req, res) => {
   }
 });
 
+app.post('/signup', async (req, res) => {
+  try {
+    const { username, email, password, role = 'user', skill_level = 0 } = req.body;
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const newUser = await pool.query(
+      'INSERT INTO users (username, email, password, role, skill_level) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [username, email, hashedPassword, role, skill_level]
+    );
+    res.json(newUser.rows[0]);
+  } catch (err) {
+    console.error('Insertion error:', err.message);
+    res.status(500).send('Server error: ' + err.message);
+  }
+});
+
 
 
   app.listen(PORT, () => {

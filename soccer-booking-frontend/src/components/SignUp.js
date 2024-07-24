@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography } from '@mui/material';
 
-const Login = ({ setToken }) => {
+const SignUp = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -11,20 +12,27 @@ const Login = ({ setToken }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/login', { email, password });
-      setToken(response.data.token);
-      localStorage.setItem('user', JSON.stringify({ email })); // Store user info in local storage
-      navigate('/dashboard');
+      await axios.post('http://localhost:5000/signup', { username, email, password, role: 'user' });
+      alert('Account created successfully!');
+      navigate('/login');
     } catch (error) {
-      console.error('Login error:', error);
-      alert('Invalid credentials');
+      console.error('Sign Up error:', error);
+      alert('Error creating account');
     }
   };
 
   return (
     <div>
-      <Typography variant="h4" gutterBottom>Login</Typography>
+      <Typography variant="h4" gutterBottom>Sign Up</Typography>
       <form onSubmit={handleSubmit}>
+        <TextField
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
         <TextField
           label="Email"
           type="email"
@@ -44,11 +52,11 @@ const Login = ({ setToken }) => {
           margin="normal"
         />
         <Button type="submit" variant="contained" color="primary" fullWidth>
-          Login
+          Sign Up
         </Button>
       </form>
     </div>
   );
 };
 
-export default Login;
+export default SignUp;
