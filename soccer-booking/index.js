@@ -659,6 +659,66 @@ app.get('/matches-with-players', authenticateJWT, async (req, res) => {
       return acc;
     }, []);
 
+    
+    app.get('/matches-with-players', authenticateJWT, async (req, res) => {
+      try {
+        const result = await pool.query(`
+          SELECT 
+            matches.id as match_id,
+            matches.date,
+            matches.time,
+            matches.location,
+            users.username
+          FROM matches
+          LEFT JOIN bookings ON matches.id = bookings.match_id
+          LEFT JOIN users ON bookings.user_id = users.id
+          WHERE matches.date >= CURRENT_DATE
+        `);
+    
+        const matches = result.rows.reduce((acc, row) => {
+          const { match_id, date, time, location, username } = row;
+          const match = acc.find(m => m.id === match_id);
+          if (match) {
+            match.players.push(username);
+          } else {
+            acc.push({
+              id: match_id,
+              date,
+              time,
+              location,
+              players: username ? [username] : []
+            });
+          }
+          return acc;
+        }, []);
+    
+        res.json(matches);
+      } catch (err) {
+        console.error('Query error:', err.message);
+        res.status(500).send('Server error: ' + err.message);
+      }
+    });
+
+    
+    // Create a new booking (accessible to both users and admins)
+app.post('/bookings', authenticateJWT, async (req, res) => {
+  const { match_id, status } = req.body;
+  const user_id = req.user.id;
+
+  try {
+    const newBooking = await pool.query(
+      'INSERT INTO bookings (match_id, user_id, status) VALUES ($1, $2, $3) RETURNING *',
+      [match_id, user_id, status]
+    );
+    res.json(newBooking.rows[0]);
+  } catch (err) {
+    console.error('Insertion error:', err.message);
+    res.status(500).send('Server error: ' + err.message);
+  }
+});
+
+
+
     res.json(matches);
   } catch (err) {
     console.error('Query error:', err.message);
