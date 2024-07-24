@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { TextField, Button, Typography } from '@mui/material';
+import { TextField, Button, Typography, Container, Box } from '@mui/material';
 
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState('');
@@ -12,8 +12,11 @@ const Login = ({ setToken }) => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/login', { email, password });
-      setToken(response.data.token);
-      localStorage.setItem('user', JSON.stringify({ email })); // Store user info in local storage
+      const token = response.data.token;
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      setToken(token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify({ username: decodedToken.username, role: decodedToken.role }));
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
@@ -22,9 +25,18 @@ const Login = ({ setToken }) => {
   };
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>Login</Typography>
-      <form onSubmit={handleSubmit}>
+    <Container maxWidth="xs">
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          mt: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h4" gutterBottom>Login</Typography>
         <TextField
           label="Email"
           type="email"
@@ -46,8 +58,8 @@ const Login = ({ setToken }) => {
         <Button type="submit" variant="contained" color="primary" fullWidth>
           Login
         </Button>
-      </form>
-    </div>
+      </Box>
+    </Container>
   );
 };
 

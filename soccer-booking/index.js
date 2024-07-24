@@ -22,20 +22,25 @@ apolloServer.start().then(() => {
   apolloServer.applyMiddleware({ app });
 
   const generateAccessToken = (user) => {
-    return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
   };
 
   app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
-    
-    if (user && bcrypt.compareSync(password, user.password)) {
-      const token = generateAccessToken(user);
-      res.json({ token });
-    } else {
-      res.status(401).send('Invalid credentials');
+  
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      const user = result.rows[0];
+  
+      if (user && bcrypt.compareSync(password, user.password)) {
+        const token = generateAccessToken(user);
+        res.json({ token });
+      } else {
+        res.status(401).send('Invalid credentials');
+      }
+    } catch (err) {
+      console.error('Login error:', err.message);
+      res.status(500).send('Server error: ' + err.message);
     }
   });
 

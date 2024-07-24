@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { TextField, Button, Typography } from '@mui/material';
+import { TextField, Button, Typography, Container, Box } from '@mui/material';
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
@@ -12,7 +12,7 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/signup', { username, email, password, role: 'user' });
+      await axios.post('http://localhost:5000/signup', { username, email, password });
       alert('Account created successfully!');
       navigate('/login');
     } catch (error) {
@@ -22,9 +22,18 @@ const SignUp = () => {
   };
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>Sign Up</Typography>
-      <form onSubmit={handleSubmit}>
+    <Container maxWidth="xs">
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          mt: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h4" gutterBottom>Sign Up</Typography>
         <TextField
           label="Username"
           value={username}
@@ -54,8 +63,8 @@ const SignUp = () => {
         <Button type="submit" variant="contained" color="primary" fullWidth>
           Sign Up
         </Button>
-      </form>
-    </div>
+      </Box>
+    </Container>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Button, List, ListItem, ListItemText, Typography, Container } from '@mui/material';
 
 const ViewMatches = () => {
   const [matches, setMatches] = useState([]);
@@ -64,21 +65,25 @@ const ViewMatches = () => {
   };
 
   return (
-    <div>
-      <h1>Future Matches</h1>
-      <ul>
+    <Container>
+      <Typography variant="h4" gutterBottom>Future Matches</Typography>
+      <List>
         {matches.map(match => (
-          <li key={match.id}>
-            {match.date} - {match.time} - {match.location}
+          <ListItem key={match.id}>
+            <ListItemText primary={`${match.date} - ${match.time} - ${match.location}`} />
             {isUserSignedUp(match.id) ? (
-              <button onClick={() => handleUnsign(match.id)}>Unsign</button>
+              <Button variant="contained" color="secondary" onClick={() => handleUnsign(match.id)}>
+                Unsign
+              </Button>
             ) : (
-              <button onClick={() => handleSignUp(match.id)}>Sign Up</button>
+              <Button variant="contained" color="primary" onClick={() => handleSignUp(match.id)}>
+                Sign Up
+              </Button>
             )}
-          </li>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Container>
   );
 };
 

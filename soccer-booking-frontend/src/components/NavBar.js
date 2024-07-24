@@ -9,7 +9,7 @@ const NavBar = ({ token, removeToken }) => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" style={{ flexGrow: 1 }}>
-          SoccerMatch
+          SoccerMatchApplication
         </Typography>
         {token ? (
           <>
