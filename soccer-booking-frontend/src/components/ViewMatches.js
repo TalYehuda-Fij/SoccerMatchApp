@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, List, ListItem, ListItemText, Typography, Container, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Button, Typography, Container, Accordion, AccordionSummary, AccordionDetails, Card, CardContent, CardActions, Grid, Divider } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { format } from 'date-fns';
 
 const ViewMatches = () => {
   const [matches, setMatches] = useState([]);
@@ -70,34 +71,56 @@ const ViewMatches = () => {
   return (
     <Container>
       <Typography variant="h4" gutterBottom>Future Matches</Typography>
-      <List>
+      <Grid container spacing={3}>
         {matches.map(match => (
-          <Accordion key={match.id}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>{`${match.date} - ${match.time} - ${match.location}`}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="subtitle1">Players Signed Up ({match.players.length}):</Typography>
-              <List>
-                {match.players.map((player, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={player} />
-                  </ListItem>
-                ))}
-              </List>
-              {isUserSignedUp(match.id) ? (
-                <Button variant="contained" color="secondary" onClick={() => handleUnsign(match.id)}>
-                  Unsign
-                </Button>
-              ) : (
-                <Button variant="contained" color="primary" onClick={() => handleSignUp(match.id)}>
-                  Sign Up
-                </Button>
-              )}
-            </AccordionDetails>
-          </Accordion>
+          <Grid item xs={12} sm={6} md={4} key={match.id}>
+            <Card sx={{ 
+              boxShadow: 3, 
+              borderRadius: 2, 
+              bgcolor: 'background.paper', 
+              padding: 2, 
+              transition: '0.3s',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'scale(1.03)'
+              }
+            }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold">
+                  {`${format(new Date(match.date), 'dd/MM/yyyy')} - ${match.time}`}
+                </Typography>
+                <Typography variant="body1" color="textSecondary" gutterBottom>{match.location}</Typography>
+                <Divider sx={{ marginY: 2 }} />
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Players Signed Up ({match.players.length})</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Grid container spacing={1}>
+                      {match.players.map((player, index) => (
+                        <Grid item xs={12} key={index}>
+                          <Typography variant="body2">{player}</Typography>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </AccordionDetails>
+                </Accordion>
+              </CardContent>
+              <CardActions>
+                {isUserSignedUp(match.id) ? (
+                  <Button variant="contained" color="secondary" fullWidth onClick={() => handleUnsign(match.id)}>
+                    Unsign
+                  </Button>
+                ) : (
+                  <Button variant="contained" color="primary" fullWidth onClick={() => handleSignUp(match.id)}>
+                    Sign Up
+                  </Button>
+                )}
+              </CardActions>
+            </Card>
+          </Grid>
         ))}
-      </List>
+      </Grid>
     </Container>
   );
 };
