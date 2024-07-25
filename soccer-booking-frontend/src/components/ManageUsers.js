@@ -6,6 +6,7 @@ const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadUsers();
@@ -17,6 +18,15 @@ const ManageUsers = () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     setUsers(result.data);
+  };
+
+  const validate = (user) => {
+    let tempErrors = {};
+    if (!user.username) tempErrors.username = "Username is required";
+    if (!user.email) tempErrors.email = "Email is required";
+    if (!user.role) tempErrors.role = "Role is required";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
   };
 
   const handleCreateUser = async (user) => {
@@ -60,6 +70,7 @@ const ManageUsers = () => {
 
   const handleOpenDialog = (user) => {
     setEditUser(user);
+    setErrors({});
     setOpen(true);
   };
 
@@ -69,12 +80,14 @@ const ManageUsers = () => {
   };
 
   const handleSubmit = () => {
-    if (editUser.id) {
-      handleEditUser(editUser);
-    } else {
-      handleCreateUser(editUser);
+    if (validate(editUser)) {
+      if (editUser.id) {
+        handleEditUser(editUser);
+      } else {
+        handleCreateUser(editUser);
+      }
+      handleCloseDialog();
     }
-    handleCloseDialog();
   };
 
   return (
@@ -118,6 +131,8 @@ const ManageUsers = () => {
             fullWidth
             value={editUser?.username || ''}
             onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
+            error={!!errors.username}
+            helperText={errors.username}
           />
           <TextField
             margin="dense"
@@ -126,6 +141,8 @@ const ManageUsers = () => {
             fullWidth
             value={editUser?.email || ''}
             onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             margin="dense"
@@ -134,6 +151,8 @@ const ManageUsers = () => {
             fullWidth
             value={editUser?.role || ''}
             onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+            error={!!errors.role}
+            helperText={errors.role}
           />
         </DialogContent>
         <DialogActions>

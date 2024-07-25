@@ -6,6 +6,7 @@ const ManageBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [open, setOpen] = useState(false);
   const [editBooking, setEditBooking] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadBookings();
@@ -17,6 +18,15 @@ const ManageBookings = () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     setBookings(result.data);
+  };
+
+  const validate = (booking) => {
+    let tempErrors = {};
+    if (!booking.match_id) tempErrors.match_id = "Match ID is required";
+    if (!booking.user_id) tempErrors.user_id = "User ID is required";
+    if (!booking.status) tempErrors.status = "Status is required";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
   };
 
   const handleCreateBooking = async (booking) => {
@@ -60,6 +70,7 @@ const ManageBookings = () => {
 
   const handleOpenDialog = (booking) => {
     setEditBooking(booking);
+    setErrors({});
     setOpen(true);
   };
 
@@ -69,12 +80,14 @@ const ManageBookings = () => {
   };
 
   const handleSubmit = () => {
-    if (editBooking.id) {
-      handleEditBooking(editBooking);
-    } else {
-      handleCreateBooking(editBooking);
+    if (validate(editBooking)) {
+      if (editBooking.id) {
+        handleEditBooking(editBooking);
+      } else {
+        handleCreateBooking(editBooking);
+      }
+      handleCloseDialog();
     }
-    handleCloseDialog();
   };
 
   return (
@@ -118,6 +131,8 @@ const ManageBookings = () => {
             fullWidth
             value={editBooking?.match_id || ''}
             onChange={(e) => setEditBooking({ ...editBooking, match_id: e.target.value })}
+            error={!!errors.match_id}
+            helperText={errors.match_id}
           />
           <TextField
             margin="dense"
@@ -126,6 +141,8 @@ const ManageBookings = () => {
             fullWidth
             value={editBooking?.user_id || ''}
             onChange={(e) => setEditBooking({ ...editBooking, user_id: e.target.value })}
+            error={!!errors.user_id}
+            helperText={errors.user_id}
           />
           <TextField
             margin="dense"
@@ -134,6 +151,8 @@ const ManageBookings = () => {
             fullWidth
             value={editBooking?.status || ''}
             onChange={(e) => setEditBooking({ ...editBooking, status: e.target.value })}
+            error={!!errors.status}
+            helperText={errors.status}
           />
         </DialogContent>
         <DialogActions>

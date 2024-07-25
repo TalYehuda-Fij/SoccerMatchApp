@@ -4,10 +4,12 @@ import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow
 import { format } from 'date-fns';
 
 
+
 const ManageMatches = () => {
   const [matches, setMatches] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMatch, setEditMatch] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadMatches();
@@ -19,6 +21,15 @@ const ManageMatches = () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     setMatches(result.data);
+  };
+
+  const validate = (match) => {
+    let tempErrors = {};
+    if (!match.date) tempErrors.date = "Date is required";
+    if (!match.time) tempErrors.time = "Time is required";
+    if (!match.location) tempErrors.location = "Location is required";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
   };
 
   const handleCreateMatch = async (match) => {
@@ -62,6 +73,7 @@ const ManageMatches = () => {
 
   const handleOpenDialog = (match) => {
     setEditMatch(match);
+    setErrors({});
     setOpen(true);
   };
 
@@ -71,12 +83,14 @@ const ManageMatches = () => {
   };
 
   const handleSubmit = () => {
-    if (editMatch.id) {
-      handleEditMatch(editMatch);
-    } else {
-      handleCreateMatch(editMatch);
+    if (validate(editMatch)) {
+      if (editMatch.id) {
+        handleEditMatch(editMatch);
+      } else {
+        handleCreateMatch(editMatch);
+      }
+      handleCloseDialog();
     }
-    handleCloseDialog();
   };
 
   return (
@@ -120,6 +134,8 @@ const ManageMatches = () => {
             fullWidth
             value={editMatch?.date || ''}
             onChange={(e) => setEditMatch({ ...editMatch, date: e.target.value })}
+            error={!!errors.date}
+            helperText={errors.date}
           />
           <TextField
             margin="dense"
@@ -128,6 +144,8 @@ const ManageMatches = () => {
             fullWidth
             value={editMatch?.time || ''}
             onChange={(e) => setEditMatch({ ...editMatch, time: e.target.value })}
+            error={!!errors.time}
+            helperText={errors.time}
           />
           <TextField
             margin="dense"
@@ -136,6 +154,8 @@ const ManageMatches = () => {
             fullWidth
             value={editMatch?.location || ''}
             onChange={(e) => setEditMatch({ ...editMatch, location: e.target.value })}
+            error={!!errors.location}
+            helperText={errors.location}
           />
         </DialogContent>
         <DialogActions>

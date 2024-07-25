@@ -7,6 +7,7 @@ const swaggerSetup = require('./swagger');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { authenticateJWT, authorizeRoles } = require('./auth');
+const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -15,12 +16,34 @@ app.use(bodyParser.json());
 app.use(cors());
 require('dotenv').config();
 
+const saltRounds = 10;
+
+const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(saltRounds);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  return hashedPassword;
+};
+
+const comparePassword = async (plainPassword, hashedPassword) => {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+};
+
+
 // Swagger setup
 swaggerSetup(app);
 
 apolloServer.start().then(() => {
   apolloServer.applyMiddleware({ app });
 
+
+
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests, please try again later.',
+  });
+  
+  app.use(limiter);
   const generateAccessToken = (user) => {
     return jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
   };
@@ -32,12 +55,21 @@ apolloServer.start().then(() => {
       const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
       const user = result.rows[0];
   
-      if (user && bcrypt.compareSync(password, user.password)) {
-        const token = generateAccessToken(user);
-        res.json({ token });
-      } else {
-        res.status(401).send('Invalid credentials');
+      if (!user) {
+        return res.status(400).send('Invalid email or password.');
       }
+  
+      const validPassword = await comparePassword(password, user.password);
+  
+      if (!validPassword) {
+        return res.status(400).send('Invalid email or password.');
+      }
+  
+      const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+      });
+  
+      res.json({ token });
     } catch (err) {
       console.error('Login error:', err.message);
       res.status(500).send('Server error: ' + err.message);
@@ -613,16 +645,23 @@ app.delete('/bookings/:match_id', authenticateJWT, async (req, res) => {
 });
 
 app.post('/signup', async (req, res) => {
+  const { username, email, password, role = 'user' } = req.body;
+
+  // Enforce strong password policies
+  if (!password || password.length < 8) {
+    return res.status(400).send('Password must be at least 8 characters long.');
+  }
+
+  const hashedPassword = await hashPassword(password);
+
   try {
-    const { username, email, password, role = 'user', skill_level = 0 } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 10);
     const newUser = await pool.query(
-      'INSERT INTO users (username, email, password, role, skill_level) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [username, email, hashedPassword, role, skill_level]
+      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *',
+      [username, email, hashedPassword, role]
     );
     res.json(newUser.rows[0]);
   } catch (err) {
-    console.error('Insertion error:', err.message);
+    console.error('Signup error:', err.message);
     res.status(500).send('Server error: ' + err.message);
   }
 });

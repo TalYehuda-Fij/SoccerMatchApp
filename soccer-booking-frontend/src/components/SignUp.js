@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
 
@@ -7,17 +6,19 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password.length < 8) {
+      alert('Password must be at least 8 characters long.');
+      return;
+    }
     try {
       await axios.post('http://localhost:5000/signup', { username, email, password });
-      alert('Account created successfully!');
-      navigate('/login');
+      alert('User registered successfully.');
     } catch (error) {
-      console.error('Sign Up error:', error);
-      alert('Error creating account');
+      console.error('Signup error:', error);
+      alert('Error registering user: ' + (error.response ? error.response.data : error.message));
     }
   };
 
@@ -36,6 +37,7 @@ const SignUp = () => {
         <Typography variant="h4" gutterBottom>Sign Up</Typography>
         <TextField
           label="Username"
+          type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
