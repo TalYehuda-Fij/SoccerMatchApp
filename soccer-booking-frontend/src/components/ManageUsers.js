@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Pagination, CircularProgress } from '@mui/material';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ username: '', email: '' });
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [page, filters]);
 
   const loadUsers = async () => {
+    setLoading(true);
     const token = localStorage.getItem('token');
-    const result = await axios.get('http://localhost:5000/users', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setUsers(result.data);
+    try {
+      const result = await axios.get('http://localhost:5000/users', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { ...filters, page, limit: 10 }
+      });
+      console.log('API Response:', result.data); // Log the response
+      setUsers(Array.isArray(result.data.users) ? result.data.users : []);
+      setTotalPages(result.data.pages || 1);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validate = (user) => {
@@ -90,36 +104,76 @@ const ManageUsers = () => {
     }
   };
 
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setPage(1);
+    loadUsers();
+  };
+
   return (
     <Container>
       <Typography variant="h4" gutterBottom>Manage Users</Typography>
+      <form onSubmit={handleFilterSubmit}>
+        <TextField
+          name="username"
+          label="Username"
+          value={filters.username}
+          onChange={handleFilterChange}
+          margin="normal"
+        />
+        <TextField
+          name="email"
+          label="Email"
+          value={filters.email}
+          onChange={handleFilterChange}
+          margin="normal"
+        />
+        <Button type="submit" variant="contained" color="primary">
+          Apply Filters
+        </Button>
+      </form>
       <Button variant="contained" color="primary" onClick={() => handleOpenDialog({})}>
         Create User
       </Button>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Username</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Role</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {users.map(user => (
-            <TableRow key={user.id}>
-              <TableCell>{user.username}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.role}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleOpenDialog(user)}>Edit</Button>
-                <Button onClick={() => handleDeleteUser(user.id)}>Delete</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleOpenDialog(user)}>Edit</Button>
+                    <Button onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            sx={{ mt: 2 }}
+          />
+        </>
+      )}
       <Dialog open={open} onClose={handleCloseDialog}>
         <DialogTitle>{editUser?.id ? 'Edit User' : 'Create User'}</DialogTitle>
         <DialogContent>

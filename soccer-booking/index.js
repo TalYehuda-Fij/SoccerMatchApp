@@ -178,13 +178,41 @@ apolloServer.start().then(() => {
    *                 $ref: '#/components/schemas/User'
    */
   app.get('/users', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM users');
-      res.json(result.rows);
-    } catch (err) {
-      console.error('Query error:', err.message);
-      res.status(500).send('Server error: ' + err.message);
-    }
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      const { username, email } = req.query;
+    
+      let query = 'SELECT * FROM users WHERE 1=1';
+      let params = [];
+    
+      if (username) {
+        params.push(`%${username}%`);
+        query += ` AND username ILIKE $${params.length}`;
+      }
+    
+      if (email) {
+        params.push(`%${email}%`);
+        query += ` AND email ILIKE $${params.length}`;
+      }
+    
+      params.push(limit, offset);
+      query += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+    
+      try {
+        const result = await pool.query(query, params);
+        const totalResult = await pool.query('SELECT COUNT(*) FROM users WHERE 1=1');
+        const total = totalResult.rows[0].count;
+        res.json({
+          users: result.rows,
+          total,
+          page,
+          pages: Math.ceil(total / limit),
+        });
+      } catch (err) {
+        console.error('Query error:', err.message);
+        res.status(500).send('Server error: ' + err.message);
+      }
   });
 
   /**
