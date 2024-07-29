@@ -37,13 +37,13 @@ apolloServer.start().then(() => {
 
 
 
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: 'Too many requests, please try again later.',
-  });
+  // const limiter = rateLimit({
+  //   windowMs: 15 * 60 * 1000,
+  //   max: 100,
+  //   message: 'Too many requests, please try again later.',
+  // });
   
-  app.use(limiter);
+  // app.use(limiter);
   const generateAccessToken = (user) => {
     return jwt.sign({ id: user.id, role: user.role, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
   };

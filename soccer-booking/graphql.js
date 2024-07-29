@@ -26,11 +26,18 @@ const typeDefs = gql`
     status: String!
   }
 
+  type Team {
+    team1: [User]
+    team2: [User]
+    team3: [User]
+  }
+
   type Query {
     users: [User]
     matches: [Match]
     bookings: [Booking]
     matchUsers(match_id: Int!): Match
+    divideTeams(match_id: Int!): Team
   }
 
   type Mutation {
@@ -39,6 +46,24 @@ const typeDefs = gql`
     createBooking(user_id: Int!, match_id: Int!, status: String!): Booking
   }
 `;
+
+// Function to divide players into balanced teams
+function dividePlayersIntoTeams(players) {
+  players.sort((a, b) => b.skill_level - a.skill_level);
+  const teams = [[], [], []];
+  const teamSkillSums = [0, 0, 0];
+  for (let i = 0; i < players.length; i++) {
+    let minTeamIndex = 0;
+    for (let j = 1; j < teams.length; j++) {
+      if (teamSkillSums[j] < teamSkillSums[minTeamIndex]) {
+        minTeamIndex = j;
+      }
+    }
+    teams[minTeamIndex].push(players[i]);
+    teamSkillSums[minTeamIndex] += players[i].skill_level;
+  }
+  return teams;
+}
 
 // Define resolvers
 const resolvers = {
@@ -76,6 +101,29 @@ const resolvers = {
 
       match.users = usersResult.rows;
       return match;
+    },
+    divideTeams: async (_, { match_id }) => {
+      const usersResult = await pool.query(
+        `SELECT users.id, users.username, users.email, users.skill_level
+         FROM users
+         JOIN bookings ON users.id = bookings.user_id
+         WHERE bookings.match_id = $1`,
+        [match_id]
+      );
+
+      const players = usersResult.rows;
+
+      if (players.length !== 18) {
+        throw new Error('There must be exactly 18 players to divide into teams.');
+      }
+
+      const [team1, team2, team3] = dividePlayersIntoTeams(players);
+
+      return {
+        team1,
+        team2,
+        team3,
+      };
     },
   },
   Mutation: {

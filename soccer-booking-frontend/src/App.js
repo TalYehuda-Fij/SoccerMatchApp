@@ -12,6 +12,7 @@ import AdminDashboard from './components/AdminDashboard';
 import ManageUsers from './components/ManageUsers';
 import ManageMatches from './components/ManageMatches';
 import ManageBookings from './components/ManageBookings';
+import Teams from './components/Teams'; // Import the Teams component
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -41,6 +42,7 @@ function App() {
           <Route path="/matches" element={token ? <Matches /> : <Navigate to="/login" />} />
           <Route path="/bookings" element={token ? <Bookings /> : <Navigate to="/login" />} />
           <Route path="/view-matches" element={token ? <ViewMatches /> : <Navigate to="/login" />} />
+          <Route path="/teams/:matchId" element={token ? <Teams /> : <Navigate to="/login" />} /> {/* Add Teams route */}
           {token && user.role === 'admin' && (
             <>
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
