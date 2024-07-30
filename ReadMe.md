@@ -1,12 +1,14 @@
 Community Soccer Match Booking System
-Overview
+
+Overview:
+
 This project started with the aim to find a nice and easy way for players to sign up for community soccer matches and to provide a solution for creating balanced teams. The application allows users to sign up for matches, and admins to manage users, matches, and bookings. It includes a feature to divide players into balanced teams based on their skill levels.
 
-Technologies Used
-Backend: Node.js with Express, Apollo Server for GraphQL
-Frontend: React
-Database: PostgreSQL running in a Docker container
-Other: JWT for authentication, bcrypt for password hashing, Redis for caching
+Technologies Used:
+ - Backend: Node.js with Express, Apollo Server for GraphQL
+ - Frontend: React
+ - Database: PostgreSQL running in a Docker container
+ - Other: JWT for authentication, bcrypt for password hashing, Redis for caching
 Features
 
 User Management:
@@ -33,15 +35,15 @@ Admin Panel:
  - Match Management: Admins can manage matches.
  - Booking Management: Admins can manage bookings.
 
- 
+
 Frontend:
  - React-based UI: Modern and responsive user interface.
  - Pagination and Filtering: Efficient data handling.
  - Error Handling: Proper loading and error states.
 
 
-Contributing
+Contributing:
  - Contributions are welcome! Please open an issue or submit a pull request with your changes.
 
-License
+License:
  - This project is licensed under the MIT License.
