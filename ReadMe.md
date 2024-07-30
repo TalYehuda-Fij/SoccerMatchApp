@@ -9,24 +9,24 @@ Database: PostgreSQL running in a Docker container
 Other: JWT for authentication, bcrypt for password hashing, Redis for caching
 Features
 
-User Management
+User Management:
  - Registration and Login: Users can sign up and log in to the system.
  - Role Management: Different roles for users (admin and player).
  - Password Hashing: Secure password storage using bcrypt.
  - JWT Authentication: Secure endpoints using JWT tokens.
  - Swagger Documentation: Comprehensive API documentation.
-Match Management
+Match Management:
  - CRUD Operations: Create, read, update, and delete matches.
  - Booking System: Users can sign up for matches.
  - Constraints: Limit of 18 players per match and prevent duplicate bookings.
-Team Assignment
+Team Assignment:
  - Balanced Teams: Automatically divide players into 3 balanced teams based on skill levels.
  - GraphQL Query: Fetch the teams using the divideTeams query.
-Admin Panel
+Admin Panel:
  - User Management: Admins can manage user accounts.
  - Match Management: Admins can manage matches.
  - Booking Management: Admins can manage bookings.
-Frontend
+Frontend:
  - React-based UI: Modern and responsive user interface.
  - Pagination and Filtering: Efficient data handling.
  - Error Handling: Proper loading and error states.
