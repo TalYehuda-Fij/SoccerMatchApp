@@ -15,17 +15,25 @@ User Management:
  - Password Hashing: Secure password storage using bcrypt.
  - JWT Authentication: Secure endpoints using JWT tokens.
  - Swagger Documentation: Comprehensive API documentation.
+
+
 Match Management:
  - CRUD Operations: Create, read, update, and delete matches.
  - Booking System: Users can sign up for matches.
  - Constraints: Limit of 18 players per match and prevent duplicate bookings.
+
+
 Team Assignment:
  - Balanced Teams: Automatically divide players into 3 balanced teams based on skill levels.
  - GraphQL Query: Fetch the teams using the divideTeams query.
+
+
 Admin Panel:
  - User Management: Admins can manage user accounts.
  - Match Management: Admins can manage matches.
  - Booking Management: Admins can manage bookings.
+
+ 
 Frontend:
  - React-based UI: Modern and responsive user interface.
  - Pagination and Filtering: Efficient data handling.
